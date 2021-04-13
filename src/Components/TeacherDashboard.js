@@ -27,7 +27,7 @@ import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import AssessmentIcon from "@material-ui/icons/Assessment";
 import AddToPhotosIcon from "@material-ui/icons/AddToPhotos";
 import Paper from "@material-ui/core/Paper";
-import AttendanceFetch from "./AttendanceFetch";
+import StudentDetailsTable from "./Tables";
 import AttendanceTableTeacher from "./AttendanceTableTeacher";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -37,7 +37,7 @@ import SaveIcon from "@material-ui/icons/Save";
 import Button from "@material-ui/core/Button";
 import axios from "axios";
 import BorderColorIcon from "@material-ui/icons/BorderColor";
-
+import Spinner from "./Loader";
 const drawerWidth = 240;
 const styles = (theme) => ({
   root: {
@@ -151,7 +151,13 @@ class Dash extends Component {
   handleDateChange = (date) => {
     this.setState({ date });
   };
-
+  componentDidMount() {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
+  }
   constructor() {
     super();
     this.state = {
@@ -178,6 +184,7 @@ class Dash extends Component {
       courses: [],
       open: false,
       selected: 0,
+      isLoading: true,
     };
 
     this.getData();
@@ -193,8 +200,6 @@ class Dash extends Component {
       _subject = this.state.courseData[_class];
     }
 
-    console.log(_class, _subject);
-
     this.setState((prev) => {
       return {
         formData: {
@@ -204,8 +209,6 @@ class Dash extends Component {
         },
       };
     });
-
-    // console.log(formData);
   };
   getAssignCourse = (e) => {
     const _aclass = e.target.value;
@@ -217,8 +220,6 @@ class Dash extends Component {
       _asubject = this.state.assignData[_aclass];
     }
 
-    console.log(_aclass, _asubject);
-
     this.setState((prev) => {
       return {
         assdata: {
@@ -228,13 +229,11 @@ class Dash extends Component {
         },
       };
     });
-
-    // console.log(formData);
   };
 
   selectSubject = (e) => {
     const _subject = e.target.value;
-    // console.log(_subject);
+
     this.setState((prev) => {
       return {
         formData: {
@@ -246,7 +245,7 @@ class Dash extends Component {
   };
   selectAssignSubject = (e) => {
     const _asubject = e.target.value;
-    // console.log(_subject);
+
     this.setState((prev) => {
       return {
         assdata: {
@@ -257,8 +256,6 @@ class Dash extends Component {
     });
   };
   markattendance = (e) => {
-    console.log(this.state.attendance);
-
     var attenData = {
       class: this.state.assdata.class,
       subject: this.state.assdata.subjectSelected,
@@ -297,7 +294,6 @@ class Dash extends Component {
   };
 
   check = (e) => {
-    console.log("Called");
     var newAtten = this.state.attendance;
     if (e.target.checked) {
       newAtten.push(e.target.value);
@@ -311,8 +307,6 @@ class Dash extends Component {
         attendance: newAtten,
       };
     });
-
-    // console.log(newAtten);
   };
 
   clicked = (e) => {
@@ -359,9 +353,7 @@ class Dash extends Component {
         };
       });
     } else {
-      console.log(e.target.innerText);
     }
-    console.log(this.state.selected);
   };
   fetchStudentdata = (e) => {
     const courseassignData = {
@@ -369,7 +361,7 @@ class Dash extends Component {
       subject: this.state.assdata.subjectSelected,
       date: this.state.date.toLocaleDateString(),
     };
-    // console.log(courseData);
+
     axios
       .post(
         "http://localhost:4000/api/dashboard/Teacher/fetchStdata",
@@ -393,8 +385,6 @@ class Dash extends Component {
             };
           });
         } else {
-          console.log(this.state.regdata);
-
           this.setState(() => {
             return {
               regdata: resp.data,
@@ -406,24 +396,6 @@ class Dash extends Component {
             };
           });
         }
-        //
-        // console.log(resp);
-        // window.location.replace("http://localhost:3000/dashboard");
-        // axios
-        //   .get("http://localhost:4000/api/dashboard", {
-        //     headers: {
-        //       Authorization: "Bearer " + localStorage.getItem("token"),
-        //     },
-        //   })
-        //   .then((respon) => {
-        //     this.setState((prev) => {
-        //       return {
-        //         ...prev,
-        //         courses: respon.data.courses,
-        //       };
-        //     });
-        //     this.forceUpdate();
-        //   });
       });
   };
   fetchAttendance = () => {
@@ -462,23 +434,6 @@ class Dash extends Component {
             },
           };
         });
-        // console.log(resp);
-        // window.location.replace("http://localhost:3000/dashboard");
-        // axios
-        //   .get("http://localhost:4000/api/dashboard", {
-        //     headers: {
-        //       Authorization: "Bearer " + localStorage.getItem("token"),
-        //     },
-        //   })
-        //   .then((respon) => {
-        //     this.setState((prev) => {
-        //       return {
-        //         ...prev,
-        //         courses: respon.data.courses,
-        //       };
-        //     });
-        //     this.forceUpdate();
-        //   });
       });
   };
 
@@ -487,7 +442,7 @@ class Dash extends Component {
       class: this.state.formData.class,
       subject: this.state.formData.subjectSelected,
     };
-    // console.log(courseData);
+
     axios
       .post(
         "http://localhost:4000/api/dashboard/Teacher/courseRegister",
@@ -514,23 +469,6 @@ class Dash extends Component {
             },
           };
         });
-        // console.log(resp);
-        // window.location.replace("http://localhost:3000/dashboard");
-        // axios
-        //   .get("http://localhost:4000/api/dashboard", {
-        //     headers: {
-        //       Authorization: "Bearer " + localStorage.getItem("token"),
-        //     },
-        //   })
-        //   .then((respon) => {
-        //     this.setState((prev) => {
-        //       return {
-        //         ...prev,
-        //         courses: respon.data.courses,
-        //       };
-        //     });
-        //     this.forceUpdate();
-        //   });
       });
   };
 
@@ -543,6 +481,9 @@ class Dash extends Component {
   };
 
   render() {
+    if (this.state.isLoading) {
+      return <Spinner />;
+    }
     return (
       <div className={this.props.classes.root}>
         <CssBaseline />
@@ -885,7 +826,10 @@ class Dash extends Component {
               5: (
                 <>
                   <h1 align="Center">Student Details</h1>
-                  <AttendanceFetch courses={this.state.attendance} />
+                  <StudentDetailsTable
+                    index={2}
+                    courses={this.state.attendance}
+                  />
                   <Divider className="mt-4 mb-4" />
                 </>
               ),

@@ -45,7 +45,6 @@ export default function AttendanceTableTeacher(props) {
   });
 
   function checker(idx, event) {
-    console.log(event);
     props.mark(event);
     let newFlags = flag;
     newFlags[idx] = !newFlags[idx];

@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
-import $ from "jquery";
-import { Link } from "react-router-dom";
 import axios from "axios";
-
-import Dashboard from "./Dashboard";
+import Spinner from "./Loader";
 
 function FormTeacher(props) {
   const [formData, getFormData] = useState({
@@ -14,23 +10,8 @@ function FormTeacher(props) {
     post: "Student",
     username: "",
     password: "",
+    isLoading: true,
   });
-  // try {
-  //     var selectSimple = $('.js-select-simple');
-
-  //     selectSimple.each(function () {
-  //         var that = $(this);
-  //         var selectBox = that.find('select');
-  //         var selectDropdown = that.find('.select-dropdown');
-  //         selectBox.select2({
-  //             dropdownParent: selectDropdown
-  //         });
-  //     });
-
-  // } catch (err) {
-  //     console.log(err);
-
-  // }
 
   function HandleChange(event) {
     const { name, value } = event.target;
@@ -51,7 +32,6 @@ function FormTeacher(props) {
         };
       });
     }
-    // console.log(formData);
   }
 
   function prevent(e) {
@@ -65,7 +45,7 @@ function FormTeacher(props) {
 
   function handleFormSubmit(event) {
     event.preventDefault();
-    // console.log(formData);
+
     async function postFormData() {
       var url = "http://localhost:4000/api/register/";
       let imageobj = new FormData();
@@ -74,7 +54,7 @@ function FormTeacher(props) {
       imageobj.append("imageData", imagedetails);
 
       const data = formData;
-      console.log(data);
+
       url = url + formData.post;
       const request = await axios.post(url, imageobj, {
         headers: {
@@ -86,19 +66,16 @@ function FormTeacher(props) {
 
     postFormData().then((res) => {
       // const message = res.data.token;
-      //console.log(message);
+
       if (res.data.Error) {
         alert(res.data.Error);
       } else if (res.data === "Registered") {
-        console.log("Successful");
-
         var url = "http://localhost:4000/api/login/";
         url = url + formData.post;
         axios.post(url, formData).then((userData) => {
           if (userData.data.Error) {
             alert(userData.data.Error);
           } else {
-            console.log("Successful");
             localStorage.setItem("token", userData.data.token);
             localStorage.setItem("post", formData.post);
           }

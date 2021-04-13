@@ -20,8 +20,8 @@ import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import AssessmentIcon from "@material-ui/icons/Assessment";
 import AddToPhotosIcon from "@material-ui/icons/AddToPhotos";
 import Paper from "@material-ui/core/Paper";
-import AttendanceTable from "./AttendanceTable";
-
+import StudentDetailsTable from "./Tables";
+import Spinner from "./Loader";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
@@ -29,8 +29,6 @@ import Select from "@material-ui/core/Select";
 import SaveIcon from "@material-ui/icons/Save";
 import Button from "@material-ui/core/Button";
 import axios from "axios";
-import { Grid } from "@material-ui/core";
-import { CenterFocusStrong } from "@material-ui/icons";
 
 const drawerWidth = 240;
 const styles = (theme) => ({
@@ -150,18 +148,19 @@ class Dash extends Component {
       courses: [],
       open: false,
       selected: 0,
+      isLoading: true,
     };
 
     this.getData();
   }
-  // componentDidMount = () => {
-  //   fetch("http://localhost:4000/wake-up")
-  //     .then((res) => res.json())
-  //     .then(() => {
-  //       this.setState({ loading: false });
-  //     })
-  //     .catch((err) => console.log(err));
-  // };
+  componentDidMount() {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
+  }
+
   getCourse = (e) => {
     const _class = e.target.value;
     let _subject;
@@ -172,8 +171,6 @@ class Dash extends Component {
       _subject = this.state.courseData[_class];
     }
 
-    console.log(_class, _subject);
-
     this.setState((prev) => {
       return {
         formData: {
@@ -183,13 +180,11 @@ class Dash extends Component {
         },
       };
     });
-
-    // console.log(formData);
   };
 
   selectSubject = (e) => {
     const _subject = e.target.value;
-    // console.log(_subject);
+
     this.setState((prev) => {
       return {
         formData: {
@@ -219,7 +214,6 @@ class Dash extends Component {
         };
       });
     }
-    console.log(this.state.selected);
   };
   registerCourse = () => {
     const courseData = {
@@ -227,7 +221,7 @@ class Dash extends Component {
       subject: this.state.formData.subjectSelected,
     };
     const post = localStorage.getItem("post");
-    // console.log(courseData);
+
     axios
       .post(
         "http://localhost:4000/api/dashboard/Student/courseRegister",
@@ -254,22 +248,6 @@ class Dash extends Component {
             },
           };
         });
-        // window.location.replace("http://localhost:3000/dashboard");
-        // axios
-        //   .get("http://localhost:4000/api/dashboard", {
-        //     headers: {
-        //       Authorization: "Bearer " + localStorage.getItem("token"),
-        //     },
-        //   })
-        //   .then((respon) => {
-        //     this.setState((prev) => {
-        //       return {
-        //         ...prev,
-        //         courses: respon.data.courses,
-        //       };
-        //     });
-        //     this.forceUpdate();
-        //   });
       })
       .catch((err) => {
         alert("Something went wrong.");
@@ -285,9 +263,9 @@ class Dash extends Component {
   };
 
   render() {
-    // if (this.state.loading) {
-    //   return <Spinner size="8x" spinning="spinning" />;
-    // }
+    if (this.state.isLoading) {
+      return <Spinner />;
+    }
     return (
       <div className={this.props.classes.root}>
         <CssBaseline />
@@ -421,7 +399,7 @@ class Dash extends Component {
               1: (
                 <>
                   <h1>Attendance</h1>
-                  <AttendanceTable courses={this.state.courses} />
+                  <StudentDetailsTable index={3} courses={this.state.courses} />
                   <Divider className="mt-4 mb-4" />
                 </>
               ),

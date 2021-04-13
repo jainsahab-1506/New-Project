@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import clsx from "clsx";
+import Spinner from "./Loader";
 // import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { withStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -19,7 +20,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import AssessmentIcon from "@material-ui/icons/Assessment";
 import Paper from "@material-ui/core/Paper";
-import StudentDetailsTable from "./StudentDetailsTable";
+import StudentDetailsTable from "./Tables";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
@@ -28,7 +29,6 @@ import Button from "@material-ui/core/Button";
 import axios from "axios";
 import BorderColorIcon from "@material-ui/icons/BorderColor";
 import { InputLabel } from "@material-ui/core";
-import AllotmentDetailsTable from "./Allotmentdetails";
 
 const drawerWidth = 240;
 const styles = (theme) => ({
@@ -129,7 +129,13 @@ class Dash extends Component {
       });
     }
   };
-
+  componentDidMount() {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
+  }
   constructor() {
     super();
     this.state = {
@@ -155,6 +161,7 @@ class Dash extends Component {
       courses: [],
       open: false,
       selected: 0,
+      isLoading: true,
     };
 
     this.getData();
@@ -170,8 +177,6 @@ class Dash extends Component {
       _subject = this.state.courseData[_class];
     }
 
-    console.log(_class, _subject);
-
     this.setState((prev) => {
       return {
         formData: {
@@ -181,37 +186,11 @@ class Dash extends Component {
         },
       };
     });
-
-    // console.log(formData);
   };
-  // getAssignCourse = (e) => {
-  //   const _aclass = e.target.value;
-  //   let _asubject;
-
-  //   if (_aclass === "None") {
-  //     _asubject = [];
-  //   } else {
-  //     _asubject = this.state.assignData[_aclass];
-  //   }
-
-  //   console.log(_aclass, _asubject);
-
-  //   this.setState((prev) => {
-  //     return {
-  //       assdata: {
-  //         ...prev.assdata,
-  //         subject: _asubject,
-  //         class: _aclass,
-  //       },
-  //     };
-  //   });
-
-  //   // console.log(formData);
-  // };
 
   selectClass = (e) => {
     const _class = e.target.value;
-    // console.log(_subject);
+
     this.setState((prev) => {
       return {
         classdata: {
@@ -222,7 +201,7 @@ class Dash extends Component {
   };
   selectAssignSubject = (e) => {
     const _asubject = e.target.value;
-    // console.log(_subject);
+
     this.setState((prev) => {
       return {
         assdata: {
@@ -247,8 +226,6 @@ class Dash extends Component {
         attendance: newAtten,
       };
     });
-
-    // console.log(newAtten);
   };
 
   clicked = (e) => {
@@ -313,9 +290,7 @@ class Dash extends Component {
         };
       });
     } else {
-      console.log(e.target.innerText);
     }
-    console.log(this.state.selected);
   };
   selectteacher = (e) => {
     this.setState(() => {
@@ -337,10 +312,9 @@ class Dash extends Component {
         },
       })
       .then((resp) => {
-        console.log(resp.data);
         if (resp.data.Error) {
           alert(resp.data.Error);
-          //console.log("Error");
+
           this.setState((prev) => {
             return {
               formData: {
@@ -371,7 +345,6 @@ class Dash extends Component {
           });
         }
       });
-    // console.log(_subject);
   };
   allotTeacher = () => {
     const data = {
@@ -404,7 +377,6 @@ class Dash extends Component {
       });
   };
   fetchStudentdata = (e) => {
-    console.log("function called");
     const _class = this.state.classdata.class;
 
     axios
@@ -418,7 +390,6 @@ class Dash extends Component {
         }
       )
       .then((resp) => {
-        console.log("called");
         if (resp.data.Error) {
           alert(resp.data.Error);
           this.setState(() => {
@@ -429,36 +400,12 @@ class Dash extends Component {
             };
           });
         } else {
-          console.log(resp.data);
-
           this.setState(() => {
             return {
               studentsData: resp.data,
             };
           });
-          // this.setState(() => {
-          //   return {
-          //     selected: 3,
-          //   };
-          // });
         }
-        //
-        // window.location.replace("http://localhost:3000/dashboard");
-        // axios
-        //   .get("http://localhost:4000/api/dashboard", {
-        //     headers: {
-        //       Authorization: "Bearer " + localStorage.getItem("token"),
-        //     },
-        //   })
-        //   .then((respon) => {
-        //     this.setState((prev) => {
-        //       return {
-        //         ...prev,
-        //         courses: respon.data.courses,
-        //       };
-        //     });
-        //     this.forceUpdate();
-        //   });
       });
   };
 
@@ -471,6 +418,9 @@ class Dash extends Component {
   };
 
   render() {
+    if (this.state.isLoading) {
+      return <Spinner />;
+    }
     return (
       <div className={this.props.classes.root}>
         <CssBaseline />
@@ -605,63 +555,7 @@ class Dash extends Component {
                   <Divider className="mt-4 mb-4" />
                 </>
               ),
-              //1: (
-              /* <>
-                  <h1>Select Class and Subject</h1>
-                  <FormControl
-                    variant="outlined"
-                    className={this.props.classes.formControl}
-                  >
-                    <InputLabel id="demo-simple-select-outlined-label">
-                      Class
-                    </InputLabel>
-                    <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
-                      //value={this.state.assdata.class}
-                      onChange={this.getAssignCourse}
-                      label="Class"
-                    >
-                      <MenuItem value={10}>10th</MenuItem>
-                      <MenuItem value={11}>11th</MenuItem>
-                      <MenuItem value={12}>12th</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <FormControl
-                    variant="outlined"
-                    className={this.props.classes.formControl}
-                  >
-                    <InputLabel id="demo-simple-select-outlined-label">
-                      Subject
-                    </InputLabel>
-                    <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
-                      value={this.state.assdata.subjectSelected}
-                      onChange={this.selectAssignSubject}
-                      label="Subject"
-                    >
-                      {this.state.assdata.subject.map((subject, index) => (
-                        <MenuItem key={index} value={subject}>
-                          {subject}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    className={this.props.classes.button}
-                    style={{ marginTop: "5rem" }}
-                    onClick={this.fetchStudentdata}
-                    startIcon={<SaveIcon />}
-                  >
-                    Save
-                  </Button>
-                  <Divider className="mt-4 mb-4" />
-                </>
-              ),*/
+
               1: (
                 <>
                   <h1>Course Registration</h1>
@@ -742,7 +636,7 @@ class Dash extends Component {
               2: (
                 <>
                   <h1 align="Center">Allotment Details</h1>
-                  <AllotmentDetailsTable details={this.state.details} />
+                  <StudentDetailsTable index={1} courses={this.state.details} />
                   <Divider className="mt-4 mb-4" />
                 </>
               ),
@@ -751,7 +645,10 @@ class Dash extends Component {
                   {this.state.studentsData.length != 0 ? (
                     <>
                       <h1 align="Center">Class Details</h1>
-                      <StudentDetailsTable courses={this.state.studentsData} />
+                      <StudentDetailsTable
+                        index={0}
+                        courses={this.state.studentsData}
+                      />
                     </>
                   ) : (
                     <>

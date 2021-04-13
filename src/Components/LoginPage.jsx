@@ -1,6 +1,6 @@
 import React, { Component, useEffect, useState } from "react";
 import axios from "axios";
-
+import Spinner from "./Loader";
 class Login extends Component {
   Check = () => {
     const tok = localStorage.getItem("token");
@@ -17,9 +17,16 @@ class Login extends Component {
       post: "Student",
       username: "",
       password: "",
+      isLoading: true,
     };
   }
-
+  componentDidMount() {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
+  }
   HandleChange = (event) => {
     const { name, value } = event.target;
     this.setState((prevvalue) => {
@@ -43,7 +50,7 @@ class Login extends Component {
 
   handleFormSubmit = async (event) => {
     event.preventDefault();
-    // console.log(formData);
+
     var url = "http://localhost:4000/api/login/";
 
     const d = this.state;
@@ -51,12 +58,6 @@ class Login extends Component {
     url = url + this.state.post;
 
     const resp = await axios.post(url, d);
-
-    //console.log(resp.data);
-    // let res;
-    // this.postFormData().then((data) => (res = data));
-    // const resp = request.data;
-    console.log(resp.data);
 
     if (resp.data.Error) {
       alert(resp.data.Error);
@@ -68,12 +69,11 @@ class Login extends Component {
         };
       });
     } else {
-      console.log(resp.data.token);
       localStorage.removeItem("token");
       localStorage.removeItem("post");
       localStorage.setItem("token", resp.data.token);
       localStorage.setItem("post", this.state.post);
-      console.log(resp);
+
       var rurl = "http://localhost:3000/dashboard/" + this.state.post;
       window.location.replace(rurl);
     }
@@ -84,7 +84,9 @@ class Login extends Component {
   };
 
   render() {
-    return (
+    return this.state.isLoading ? (
+      <Spinner />
+    ) : (
       <>
         <div className="login">
           <div className="d-flex justify-content-center h-100">
