@@ -127,6 +127,11 @@ class Dash extends Component {
   };
 
   getData = async () => {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: true,
+      };
+    });
     const tok = localStorage.getItem("token");
     const post = localStorage.getItem("post");
 
@@ -146,18 +151,23 @@ class Dash extends Component {
         assignData: _user.data.tcourses,
       });
     }
-  };
-
-  handleDateChange = (date) => {
-    this.setState({ date });
-  };
-  componentDidMount() {
     this.setState((prevvalue) => {
       return {
         isLoading: false,
       };
     });
-  }
+  };
+
+  handleDateChange = (date) => {
+    this.setState({ date });
+  };
+  // componentDidMount() {
+  //   this.setState((prevvalue) => {
+  //     return {
+  //       isLoading: false,
+  //     };
+  //   });
+  // }
   constructor() {
     super();
     this.state = {
@@ -255,7 +265,12 @@ class Dash extends Component {
       };
     });
   };
-  markattendance = (e) => {
+  markattendance = async (e) => {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: true,
+      };
+    });
     var attenData = {
       class: this.state.assdata.class,
       subject: this.state.assdata.subjectSelected,
@@ -263,34 +278,36 @@ class Dash extends Component {
       date: this.state.date.toLocaleDateString(),
     };
 
-    axios
-      .post(
-        "http://localhost:4000/api/dashboard/Teacher/MarkAttendance",
-        attenData,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
-      )
-      .then((res) => {
-        if (res.data === "Done") {
-          alert("Successfully Marked");
-        } else {
-          alert(res.data.Error);
-        }
-        this.setState(() => {
-          return {
-            selected: 1,
-            attendance: [],
-            assdata: {
-              class: "",
-              subject: ["None"],
-              subjectSelected: "",
-            },
-          };
-        });
-      });
+    const res = await axios.post(
+      "http://localhost:4000/api/dashboard/Teacher/MarkAttendance",
+      attenData,
+      {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      }
+    );
+    if (res.data === "Done") {
+      alert("Successfully Marked");
+    } else {
+      alert(res.data.Error);
+    }
+    this.setState(() => {
+      return {
+        selected: 1,
+        attendance: [],
+        assdata: {
+          class: "",
+          subject: ["None"],
+          subjectSelected: "",
+        },
+      };
+    });
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
   };
 
   check = (e) => {
@@ -355,121 +372,147 @@ class Dash extends Component {
     } else {
     }
   };
-  fetchStudentdata = (e) => {
+  fetchStudentdata = async (e) => {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: true,
+      };
+    });
     const courseassignData = {
       class: this.state.assdata.class,
       subject: this.state.assdata.subjectSelected,
       date: this.state.date.toLocaleDateString(),
     };
 
-    axios
-      .post(
-        "http://localhost:4000/api/dashboard/Teacher/fetchStdata",
-        courseassignData,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
+    const resp = await axios.post(
+      "http://localhost:4000/api/dashboard/Teacher/fetchStdata",
+      courseassignData,
+      {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      }
+    );
+    if (resp.data.Error) {
+      alert(resp.data.Error);
+      this.setState(() => {
+        return {
+          assdata: {
+            class: "",
+            subject: ["None"],
+            subjectSelected: "",
           },
-        }
-      )
-      .then((resp) => {
-        if (resp.data.Error) {
-          alert(resp.data.Error);
-          this.setState(() => {
-            return {
-              assdata: {
-                class: "",
-                subject: ["None"],
-                subjectSelected: "",
-              },
-            };
-          });
-        } else {
-          this.setState(() => {
-            return {
-              regdata: resp.data,
-            };
-          });
-          this.setState(() => {
-            return {
-              selected: 3,
-            };
-          });
-        }
+        };
       });
+    } else {
+      this.setState(() => {
+        return {
+          regdata: resp.data,
+        };
+      });
+      this.setState(() => {
+        return {
+          selected: 3,
+        };
+      });
+    }
+
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
   };
-  fetchAttendance = () => {
+  fetchAttendance = async () => {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: true,
+      };
+    });
     const courseData = {
       class: this.state.assdata.class,
       subject: this.state.assdata.subjectSelected,
     };
-    axios
-      .post(
-        "http://localhost:4000/api/dashboard/Teacher/fetchAttendance",
-        courseData,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
-      )
-      .then((resp) => {
-        this.getData();
-        if (resp.data.Error) {
-          alert(resp.data.Error);
-        } else {
-          this.setState(() => {
-            return {
-              attendance: resp.data,
-              selected: 5,
-            };
-          });
-        }
-        this.setState(() => {
-          return {
-            assdata: {
-              class: "",
-              subject: ["None"],
-              subjectSelected: "",
-            },
-          };
-        });
+    const resp = await axios.post(
+      "http://localhost:4000/api/dashboard/Teacher/fetchAttendance",
+      courseData,
+      {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      }
+    );
+
+    this.getData();
+    if (resp.data.Error) {
+      alert(resp.data.Error);
+    } else {
+      this.setState(() => {
+        return {
+          attendance: resp.data,
+          selected: 5,
+        };
       });
+    }
+    this.setState(() => {
+      return {
+        assdata: {
+          class: "",
+          subject: ["None"],
+          subjectSelected: "",
+        },
+      };
+    });
+
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
   };
 
-  registerCourse = () => {
+  registerCourse = async () => {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: true,
+      };
+    });
     const courseData = {
       class: this.state.formData.class,
       subject: this.state.formData.subjectSelected,
     };
 
-    axios
-      .post(
-        "http://localhost:4000/api/dashboard/Teacher/courseRegister",
-        courseData,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
-      )
-      .then((resp) => {
-        this.getData();
-        if (resp.data.Error) {
-          alert(resp.data.Error);
-        } else {
-          alert("Successfully Registered.");
-        }
-        this.setState(() => {
-          return {
-            formData: {
-              class: "",
-              subject: ["None"],
-              subjectSelected: "",
-            },
-          };
-        });
-      });
+    const resp = await axios.post(
+      "http://localhost:4000/api/dashboard/Teacher/courseRegister",
+      courseData,
+      {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      }
+    );
+
+    this.getData();
+    if (resp.data.Error) {
+      alert(resp.data.Error);
+    } else {
+      alert("Successfully Registered.");
+    }
+    this.setState(() => {
+      return {
+        formData: {
+          class: "",
+          subject: ["None"],
+          subjectSelected: "",
+        },
+      };
+    });
+
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
   };
 
   handleDrawerOpen = () => {
@@ -589,10 +632,11 @@ class Dash extends Component {
                     elevation={5}
                     className="m-auto"
                     style={{
-                      width: "40%",
+                      width: "60%",
                       height: "100%",
-                      display: "grid",
-                      placeItems: "center",
+                      display: "flex",
+                      justifyContent: "space-evenly",
+                      alignItems: "center",
                     }}
                   >
                     <div class="p-2">
@@ -601,6 +645,8 @@ class Dash extends Component {
                         style={{ height: "300px", width: "300px" }}
                         src={`http://localhost:4000/${this.state.user.image}`}
                       ></img>
+                    </div>
+                    <div class="p-2">
                       <h3 style={{ fontWeight: "500" }}>
                         <span style={{ fontWeight: "900" }}> Name: </span>{" "}
                         {`${this.state.user.fName} ${this.state.user.lName}`}
@@ -684,7 +730,7 @@ class Dash extends Component {
                     onClick={this.fetchStudentdata}
                     startIcon={<SaveIcon />}
                   >
-                    Save
+                    Proceed
                   </Button>
                   <Divider className="mt-4 mb-4" />
                 </>

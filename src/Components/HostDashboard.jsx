@@ -110,6 +110,11 @@ class Dash extends Component {
   };
 
   getData = async () => {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: true,
+      };
+    });
     const tok = localStorage.getItem("token");
     const post = localStorage.getItem("post");
 
@@ -128,14 +133,13 @@ class Dash extends Component {
         user: _user.data,
       });
     }
-  };
-  componentDidMount() {
     this.setState((prevvalue) => {
       return {
         isLoading: false,
       };
     });
-  }
+  };
+
   constructor() {
     super();
     this.state = {
@@ -212,23 +216,7 @@ class Dash extends Component {
     });
   };
 
-  check = (e) => {
-    var newAtten = this.state.attendance;
-    if (e.target.checked) {
-      newAtten.push(e.target.value);
-    } else {
-      var ind = newAtten.indexOf(e.target.value);
-      newAtten.splice(ind, 1);
-    }
-
-    this.setState((pre) => {
-      return {
-        attendance: newAtten,
-      };
-    });
-  };
-
-  clicked = (e) => {
+  clicked = async (e) => {
     if (e.target.innerText === "Details") {
       this.setState(() => {
         return {
@@ -251,34 +239,45 @@ class Dash extends Component {
         };
       });
     } else if (e.target.innerText == "Teacher Allotment Details") {
+      this.setState((prevvalue) => {
+        return {
+          isLoading: true,
+        };
+      });
       this.setState(() => {
         return {
           selected: 2,
         };
       });
-      axios
-        .get("http://localhost:4000/api/dashboard/Host/AllotmentData", {
+      const resp = await axios.get(
+        "http://localhost:4000/api/dashboard/Host/AllotmentData",
+        {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
           },
-        })
-        .then((resp) => {
-          if (resp.data.Error) {
-            alert(resp.data.Error);
-          } else {
-            let temp = resp.data;
-            temp.sort((a, b) => {
-              if (a.class < b.class) return -1;
-              else return 1;
-            });
+        }
+      );
 
-            this.setState(() => {
-              return {
-                details: temp,
-              };
-            });
-          }
+      if (resp.data.Error) {
+        alert(resp.data.Error);
+      } else {
+        let temp = resp.data;
+        temp.sort((a, b) => {
+          if (a.class < b.class) return -1;
+          else return 1;
         });
+
+        this.setState(() => {
+          return {
+            details: temp,
+          };
+        });
+      }
+      this.setState((prevvalue) => {
+        return {
+          isLoading: false,
+        };
+      });
     } else if (e.target.innerText == "Class Details") {
       this.setState(() => {
         return {
@@ -346,67 +345,87 @@ class Dash extends Component {
         }
       });
   };
-  allotTeacher = () => {
+  allotTeacher = async () => {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: true,
+      };
+    });
     const data = {
       class: this.state.formData.class,
       subject: this.state.formData.subjectSelected,
       email: this.state.teacherSelected,
     };
-    axios
-      .post("http://localhost:4000/api/dashboard/Host/AllotTeacher", data, {
+    const resp = await axios.post(
+      "http://localhost:4000/api/dashboard/Host/AllotTeacher",
+      data,
+      {
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
         },
-      })
-      .then((resp) => {
-        if (resp.data.Error) {
-          alert(resp.data.Error);
-        } else {
-          alert("Successfully Alloted");
-        }
-        this.setState(() => {
-          return {
-            formData: {
-              class: "",
-              subject: ["None"],
-              subjectSelected: "",
-            },
-            teacherSelected: "",
-          };
-        });
-      });
+      }
+    );
+
+    if (resp.data.Error) {
+      alert(resp.data.Error);
+    } else {
+      alert("Successfully Alloted");
+    }
+    this.setState(() => {
+      return {
+        formData: {
+          class: "",
+          subject: ["None"],
+          subjectSelected: "",
+        },
+        teacherSelected: "",
+      };
+    });
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
   };
-  fetchStudentdata = (e) => {
+  fetchStudentdata = async (e) => {
+    this.setState((prevvalue) => {
+      return {
+        isLoading: true,
+      };
+    });
     const _class = this.state.classdata.class;
 
-    axios
-      .post(
-        "http://localhost:4000/api/dashboard/Host/fetchStdata",
-        { class: _class },
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
+    const resp = await axios.post(
+      "http://localhost:4000/api/dashboard/Host/fetchStdata",
+      { class: _class },
+      {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      }
+    );
+
+    if (resp.data.Error) {
+      alert(resp.data.Error);
+      this.setState(() => {
+        return {
+          classdata: {
+            class: "",
           },
-        }
-      )
-      .then((resp) => {
-        if (resp.data.Error) {
-          alert(resp.data.Error);
-          this.setState(() => {
-            return {
-              classdata: {
-                class: "",
-              },
-            };
-          });
-        } else {
-          this.setState(() => {
-            return {
-              studentsData: resp.data,
-            };
-          });
-        }
+        };
       });
+    } else {
+      this.setState(() => {
+        return {
+          studentsData: resp.data,
+        };
+      });
+    }
+    this.setState((prevvalue) => {
+      return {
+        isLoading: false,
+      };
+    });
   };
 
   handleDrawerOpen = () => {
@@ -526,10 +545,11 @@ class Dash extends Component {
                     elevation={5}
                     className="m-auto"
                     style={{
-                      width: "40%",
+                      width: "60%",
                       height: "100%",
-                      display: "grid",
-                      placeItems: "center",
+                      display: "flex",
+                      justifyContent: "space-evenly",
+                      alignItems: "center",
                     }}
                   >
                     <div class="p-2">
@@ -538,6 +558,8 @@ class Dash extends Component {
                         style={{ height: "300px", width: "300px" }}
                         src={`http://localhost:4000/${this.state.user.image}`}
                       ></img>
+                    </div>
+                    <div class="p-2">
                       <h3 style={{ fontWeight: "500" }}>
                         <span style={{ fontWeight: "900" }}> Name: </span>{" "}
                         {`${this.state.user.fName} ${this.state.user.lName}`}
@@ -558,7 +580,7 @@ class Dash extends Component {
 
               1: (
                 <>
-                  <h1>Course Registration</h1>
+                  <h1>Teacher Allotment</h1>
                   <FormControl
                     variant="outlined"
                     className={this.props.classes.formControl}
@@ -629,7 +651,7 @@ class Dash extends Component {
                     onClick={this.allotTeacher}
                     startIcon={<SaveIcon />}
                   >
-                    Save
+                    Allot
                   </Button>
                 </>
               ),
@@ -682,7 +704,7 @@ class Dash extends Component {
                         onClick={this.fetchStudentdata}
                         startIcon={<SaveIcon />}
                       >
-                        Save
+                        Proceed
                       </Button>
                       <Divider className="mt-4 mb-4" />
                     </>

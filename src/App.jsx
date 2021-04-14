@@ -9,6 +9,7 @@ class Form extends Component {
     super();
     this.state = { isLoading: true };
   }
+
   componentDidMount() {
     this.setState((prevvalue) => {
       return {
@@ -23,7 +24,9 @@ class Form extends Component {
     ) : (
       <div class="jumbotron centered main">
         <div class="container">
-          <i class="fas fa-key fa-6x"></i>
+          {/* <i class="fas fa-key fa-6x"></i> */}
+          {/* <i class="fas fa-8x fa-chart-bar"></i> */}
+          <img className="graph-icon" src="bar-chart.svg"></img>
           <h1 class="display-3">Attendance Management</h1>
           <p class="lead">Please Select</p>
           <hr />

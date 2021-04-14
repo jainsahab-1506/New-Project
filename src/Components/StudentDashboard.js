@@ -110,9 +110,11 @@ class Dash extends Component {
   };
 
   getData = async () => {
+    this.setState({
+      isLoading: true,
+    });
     const tok = localStorage.getItem("token");
     const post = localStorage.getItem("post");
-
     if (tok === null) {
       window.location.replace("http://localhost:3000/");
     } else {
@@ -129,6 +131,9 @@ class Dash extends Component {
         courses: _user.data.courses,
       });
     }
+    this.setState({
+      isLoading: false,
+    });
   };
 
   constructor() {
@@ -152,13 +157,6 @@ class Dash extends Component {
     };
 
     this.getData();
-  }
-  componentDidMount() {
-    this.setState((prevvalue) => {
-      return {
-        isLoading: false,
-      };
-    });
   }
 
   getCourse = (e) => {
@@ -215,43 +213,42 @@ class Dash extends Component {
       });
     }
   };
-  registerCourse = () => {
+  registerCourse = async () => {
+    this.setState({
+      isLoading: true,
+    });
     const courseData = {
       class: this.state.formData.class,
       subject: this.state.formData.subjectSelected,
     };
     const post = localStorage.getItem("post");
-
-    axios
-      .post(
-        "http://localhost:4000/api/dashboard/Student/courseRegister",
-        courseData,
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        }
-      )
-      .then((resp) => {
-        this.getData();
-        if (resp.data.Error) {
-          alert(resp.data.Error);
-        } else {
-          alert("Successfully Registered.");
-        }
-        this.setState(() => {
-          return {
-            formData: {
-              class: "",
-              subject: ["None"],
-              subjectSelected: "",
-            },
-          };
-        });
-      })
-      .catch((err) => {
-        alert("Something went wrong.");
-      });
+    const resp = await axios.post(
+      "http://localhost:4000/api/dashboard/Student/courseRegister",
+      courseData,
+      {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      }
+    );
+    this.getData();
+    if (resp.data.Error) {
+      alert(resp.data.Error);
+    } else {
+      alert("Successfully Registered.");
+    }
+    this.setState(() => {
+      return {
+        formData: {
+          class: "",
+          subject: ["None"],
+          subjectSelected: "",
+        },
+      };
+    });
+    this.setState({
+      isLoading: false,
+    });
   };
 
   handleDrawerOpen = () => {
@@ -367,18 +364,24 @@ class Dash extends Component {
                     elevation={5}
                     className="m-auto"
                     style={{
-                      width: "40%",
+                      width: "60%",
                       height: "100%",
-                      display: "grid",
-                      placeItems: "center",
+                      display: "flex",
+                      justifyContent: "space-evenly",
+                      alignItems: "center",
                     }}
                   >
                     <div class="p-2">
                       <img
                         class="rounded-circle img-fluid pb-3"
-                        style={{ height: "300px", width: "300px" }}
+                        style={{
+                          height: "300px",
+                          width: "300px",
+                        }}
                         src={`http://localhost:4000/${this.state.user.image}`}
                       ></img>
+                    </div>
+                    <div class="p-2">
                       <h3 style={{ fontWeight: "500" }}>
                         <span style={{ fontWeight: "900" }}> Name: </span>{" "}
                         {`${this.state.user.fName} ${this.state.user.lName}`}

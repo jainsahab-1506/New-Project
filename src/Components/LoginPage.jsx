@@ -57,6 +57,11 @@ class Login extends Component {
 
     url = url + this.state.post;
 
+    this.setState((prev) => {
+      return {
+        isLoading: true,
+      };
+    });
     const resp = await axios.post(url, d);
 
     if (resp.data.Error) {
@@ -66,6 +71,11 @@ class Login extends Component {
           post: prev.post,
           username: "",
           password: "",
+        };
+      });
+      this.setState((prev) => {
+        return {
+          isLoading: false,
         };
       });
     } else {
